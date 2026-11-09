@@ -1,0 +1,19 @@
+# Dependências dos scripts em analise_video/.
+# No Apple Silicon, utilize Python nativo ARM64.
+
+# Análise postural com MediaPipe.
+mediapipe==0.10.21
+
+# Fornece cv2, incluindo imshow.
+# Não instalar junto com opencv-python ou variantes headless.
+opencv-contrib-python
+
+# Leitura e consulta do CSV.
+pandas
+
+# Barra de progresso do processamento de vídeo.
+tqdm
+
+# Relatório PDF para pacientes e fisioterapeutas (gerar_relatorio.py).
+# Executado automaticamente por parte1.sh após a avaliação do vídeo.
+reportlab>=4.0,<5
