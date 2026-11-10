@@ -74,10 +74,6 @@ def avaliar_movimento(args):
                 frame_count += 1
                 continue
             
-            #verificar_erro(avaliacao_atual, angulo, ultimo_angulo_avaliado, angulo_que_define_maximo_correto, args.margem_proximidade_inicio_fim)
-
-            angulo_valido = False
-            motivo = ""
             if(avaliacao_atual):
                 criar_novo = avaliar_angulo(angulo, ultimo_angulo_avaliado, angulo_que_definine_inicio_exercicio, args.margem_proximidade_inicio_fim, avaliacao_atual)
 
@@ -93,7 +89,8 @@ def avaliar_movimento(args):
                                         existe_movimento = False,
                                         fps = cap.get(cv2.CAP_PROP_FPS),
                                         esta_em_sentido_ida = True,
-                                        esta_em_sentido_volta = False
+                                        esta_em_sentido_volta = False,
+                                        passou_angulo_maximo = False
                                     ) 
                 avaliacoes.append(avaliacao_atual)
                 print(f"iniciou: {count}")
@@ -122,12 +119,12 @@ def avaliar_movimento(args):
             frame_inicio=item.frame_inicio,
             frame_fim=item.frame_fim,
             fps = item.fps,
-            correto=all(item.angulos_ida.values()) and all(item.angulos_volta.values())
+            correto=all(item.angulos_ida.values()) and all(item.angulos_volta.values()) and not item.passou_angulo_maximo
         )
         for item in [item for item in avaliacoes if item.existe_movimento is True]
     ]
 
-    nome_arquivo_json = f"{args.output}/avaliacao_sem_base.json"
+    nome_arquivo_json = f"{args.output}/avaliacao.json"
     with open(nome_arquivo_json, "w", encoding="utf-8") as file: json.dump([vars(item) for item in resultado], file, indent=4, ensure_ascii=False)
     cv2.destroyAllWindows()     
     gerar_video_relatorio(args, nome_arquivo_json)
@@ -216,7 +213,7 @@ def avaliar_angulo(angulo_atual: float, angulo_anterior: float, angulo_inicial: 
     movimento_ida = angulo_atual > angulo_anterior  
     esta_no_angulo_minimo = esta_no_angulo(angulo_atual, float(angulo_inicial), float(margem))
     
-    return movimento_ida and esta_no_angulo_minimo #and (angulo_anterior == None or avaliacao_atual.esta_em_sentido_volta)
+    return movimento_ida and esta_no_angulo_minimo and (angulo_anterior == None or avaliacao_atual.esta_em_sentido_volta)
 
 def validar_sentido(angulo_atual: float, angulo_anterior: float, avaliacao_atual):
     avaliacao_atual.esta_em_sentido_ida = angulo_anterior == None or angulo_atual >= angulo_anterior
@@ -228,6 +225,7 @@ def validar_movimento(angulo_atual: float, angulo_base: float, margem: float, av
 def validar_maximo_minimo(angulo_atual: float, angulo_minimo: float, angulo_maximo: float,margem: float, avaliacao_atual):
     avaliacao_atual.atingiu_angulo_maximo = avaliacao_atual.atingiu_angulo_maximo or esta_no_angulo(angulo_atual, angulo_maximo, margem)
     avaliacao_atual.atingiu_angulo_minimo = avaliacao_atual.atingiu_angulo_minimo or esta_no_angulo(angulo_atual, angulo_minimo, margem)
+    avaliacao_atual.passou_angulo_maximo = avaliacao_atual.passou_angulo_maximo or angulo_atual > (angulo_maximo + margem)
 
 def esta_no_angulo(angulo_atual: float, angulo_base: float, margem: float) -> bool:
     minimo = float(angulo_base) - float(margem)

@@ -39,12 +39,12 @@ python "$SCRIPT_DIR/analise_video/avaliacao_video.py" \
  -o "$OUTPUT_DIR" \
  -q 5 \
  -s 10 \
- -e 155 \
+ -e 140 \
  -m 8 \
- -n 8 \
- -a 3
+ -n 5 \
+ -a 1
 
 echo "Gerando relatório PDF da avaliação..."
 python "$SCRIPT_DIR/analise_video/gerar_relatorio.py" \
- --json "$OUTPUT_DIR/avaliacao_sem_base.json" \
+ --json "$OUTPUT_DIR/avaliacao.json" \
  --video "$VIDEO_FILE"
