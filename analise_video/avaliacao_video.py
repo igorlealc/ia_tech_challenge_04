@@ -192,23 +192,6 @@ def gerar_video_relatorio(args, path_avaliacao):
     video_writer.release()       
     cv2.destroyAllWindows() 
 
-def verificar_erro(validacao_atual, angulo_atual, angulo_anterior, maior_angulo, margem):
-     if(validacao_atual == None):
-        return
-
-     esta_no_maior_angulo = esta_no_angulo(angulo_atual, maior_angulo, margem)     
-
-     if(not validacao_atual.atingiu_angulo_maximo and not esta_no_maior_angulo):
-        validacao_atual.com_erro = float(angulo_atual) < float(angulo_anterior) or validacao_atual.com_erro
-
-
-     maximo = float(maior_angulo) + float(margem)
-     validacao_atual.com_erro = float(angulo_atual) > maximo  or validacao_atual.com_erro   
-
-     if(esta_no_maior_angulo):
-             validacao_atual.atingiu_angulo_maximo = True
-             validacao_atual.com_erro = float(angulo_atual) > float(angulo_anterior) and not esta_no_maior_angulo                
-
 def avaliar_angulo(angulo_atual: float, angulo_anterior: float, angulo_inicial: float, margem: float, avaliacao_atual):
     movimento_ida = angulo_atual > angulo_anterior  
     esta_no_angulo_minimo = esta_no_angulo(angulo_atual, float(angulo_inicial), float(margem))

@@ -6,7 +6,6 @@ def inicializar_mediapipe() -> SimpleNamespace:
     media_pipe = SimpleNamespace(
         mp_pose = mp.solutions.pose,
         pose = mp.solutions.pose.Pose(min_detection_confidence=0.9, min_tracking_confidence=0.9),
-        mp_drawing = mp.solutions.drawing_utils
     )    
     return media_pipe
 
