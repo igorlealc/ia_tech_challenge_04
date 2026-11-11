@@ -1,149 +1,129 @@
 # Tech Challenge — Fase 4
 
-Este diretório reúne os arquivos do trabalho descrito em [IADT — Fase 4 — Tech Challenge](IADT%20-%20Fase%204%20-%20Tech%20challenge.pdf). O desafio propõe o uso de dados médicos de vídeo, áudio e texto para identificar situações fora do padrão esperado.
+Protótipo acadêmico para análise de vídeos de fisioterapia e áudios de consultas. A parte 1 identifica movimentos que precisam de revisão; a parte 2 treina modelos preditivos e gera relatórios para avaliação médica.
 
-Este README documenta a **parte 1 — Análise de Vídeo**, implementada para demonstrar a capacidade de utilizar visão computacional na identificação de execuções corretas e incorretas de um exercício de fisioterapia.
+## Preparação
+
+- Python **3.11**, disponível como `python3.11`, Bash e acesso à internet.
+- No Apple Silicon, use Python nativo ARM64.
+- Disponibilize os arquivos de entrada nas pastas indicadas abaixo.
+- Para a parte 2, preencha o `.env` conforme [`.env.example`](.env.example), sem publicar credenciais.
+
+Os dois scripts criam ou reutilizam `trabalho4/.venv` e instalam as dependências do [requirements.txt](requirements.txt) da raiz. Execute os comandos abaixo **dentro de `trabalho4`**. A partir da pasta superior, use `bash trabalho4/parte1.sh` ou `bash trabalho4/parte2.sh` com as mesmas opções.
 
 ## Parte 1 — Análise de vídeo de fisioterapia
 
-A solução processa uma gravação de um exercício, identifica pontos corporais com MediaPipe e acompanha o movimento do braço direito. A partir das posições do ombro e do pulso, calcula uma orientação angular e verifica a passagem pelas faixas esperadas durante a ida e a volta do movimento.
+O [parte1.sh](parte1.sh) processa o vídeo com MediaPipe, classifica trechos do movimento do braço e gera um vídeo anotado, um JSON e um relatório PDF.
 
-Os trechos identificados são classificados e utilizados para gerar:
-
-- Um JSON com os intervalos e as classificações.
-- Um vídeo anotado com os resultados da avaliação.
-- Um relatório PDF para leitura por fisioterapeutas e pacientes, com resumo e horários dos trechos avaliados.
-
-O fluxo demonstra os três requisitos da parte 1: processamento de um vídeo de fisioterapia, detecção de movimentos fora do padrão esperado e geração automática de relatório indicando os trechos que precisam de revisão.
-
-### Origem dos vídeos — REHAB24-6
-
-Os vídeos utilizados neste trabalho vieram do **REHAB24-6: A multi-modal dataset of physical rehabilitation exercises**, disponibilizado publicamente no Zenodo. O conjunto fornece vídeos de exercícios de reabilitação, dados de movimento, segmentação das repetições e rótulos de execução correta ou incorreta.
-
-- [Acessar o REHAB24-6 e baixar os arquivos no Zenodo](https://zenodo.org/records/13305826).
-- [Referência permanente — DOI: 10.5281/zenodo.13305826](https://doi.org/10.5281/zenodo.13305826).
-
-Referência: Černek, A.; Sedmidubsky, J.; Budikova, P.; Jánošová, M.; Katzer, L.; Procházka, M. (2024). *REHAB24-6: A multi-modal dataset of physical rehabilitation exercises* (v1) [Conjunto de dados]. Zenodo.
-
-### Escopo e referência da demonstração
-
-O objetivo é apresentar um protótipo demonstrativo para o vídeo e o exercício selecionados. Os parâmetros estão ajustados para esse cenário; o resultado não representa uma validação para qualquer exercício ou enquadramento de câmera.
-
-Segundo a comparação informada pela equipe, o vídeo já foi avaliado em outro trabalho técnico desenvolvido com profissionais de TI e saúde, e os resultados coincidiram quanto às repetições corretas e incorretas. Essa concordância se refere ao vídeo utilizado na demonstração. A identificação bibliográfica do trabalho de referência e a comparação dos resultados devem acompanhar o relatório técnico da entrega.
-
-## Pré-requisitos
-
-- Bash para executar `parte1.sh`.
-- Python **3.11**, disponível pelo comando `python3.11`, com suporte a ambientes virtuais (`venv`).
-- Acesso à internet para instalação das dependências.
-- Ambiente com interface gráfica, pois o processamento exibe o vídeo em uma janela do OpenCV.
-- Vídeo de entrada em `analise_video/inputs/movies/PM_012-Camera17-30fps.mp4`.
-
-No Apple Silicon, utilize Python nativo ARM64, conforme indicado em `requirements.txt`.
-
-As dependências incluem MediaPipe, OpenCV, pandas, tqdm e ReportLab. O script instala essas bibliotecas automaticamente no ambiente virtual `trabalho4/.venv`.
-
-## Como executar `parte1.sh`
-
-A partir da raiz do repositório:
-
-```bash
-bash trabalho4/parte1.sh
-```
-
-Ou, dentro da pasta `trabalho4`:
+**Entrada:** `analise_video/inputs/movies/PM_012-Camera17-30fps.mp4`.
 
 ```bash
 bash parte1.sh
 ```
 
-Os caminhos dos scripts, do vídeo e das saídas são definidos a partir da localização de `parte1.sh`, permitindo executá-lo a partir de outros diretórios.
+É necessário um ambiente gráfico para a janela do OpenCV. Aguarde o processamento terminar; pressionar `q` pode deixar o vídeo de saída incompleto. Para trocar o vídeo ou os parâmetros do exercício, edite `parte1.sh`.
 
-O script realiza as seguintes etapas:
+**Saídas em `analise_video/outputs/`:** `avaliacao.json`, `resultado.mp4` e `avaliacao.pdf`.
 
-1. Verifica a disponibilidade do Python 3.11.
-2. Cria ou reutiliza o ambiente virtual `trabalho4/.venv`.
-3. Atualiza o pip e instala as dependências de `trabalho4/requirements.txt`.
-4. Cria a pasta de saída, caso necessário.
-5. Executa `avaliacao_video.py`, que analisa o vídeo, grava o JSON e produz o vídeo anotado.
-6. Executa `gerar_relatorio.py`, utilizando o JSON gerado e consultando o FPS do mesmo vídeo de entrada para calcular os horários do relatório.
+### Fonte dos vídeos — REHAB24-6
 
-Aguarde o processamento e a geração do vídeo anotado terminarem para obter o PDF. Pressionar `q` na janela do vídeo encerra antecipadamente a geração do vídeo anotado, deixando esse arquivo incompleto.
+Os vídeos são provenientes do **REHAB24-6**, que disponibiliza gravações de exercícios, dados de movimento e anotações de execução. [Fonte e condições de uso no Zenodo](https://zenodo.org/records/13305826) · [DOI do conjunto de dados](https://doi.org/10.5281/zenodo.13305826).
 
-É possível informar um arquivo alternativo de dependências como primeiro argumento:
+**Conjunto de dados:** Černek, A.; Sedmidubsky, J.; Budikova, P.; Jánošová, M.; Katzer, L.; Procházka, M. (2024). *REHAB24-6: A multi-modal dataset of physical rehabilitation exercises*, v1. Zenodo.
+
+**Artigo solicitado para citação pelos autores:** Černek, A.; Sedmidubsky, J.; Budikova, P. (2024). *REHAB24-6: Physical Therapy Dataset for Analyzing Pose Estimation Methods*. 17th International Conference on Similarity Search and Applications (SISAP), Springer.
+
+O uso dos dados deve observar as condições de pesquisa não comercial indicadas no registro. Neste trabalho, utilizamos um vídeo selecionado e produzimos classificações e anotações próprias; elas não substituem as anotações originais.
+
+Mais informações: [README da análise de vídeo](analise_video/README.md).
+
+## Parte 2 — Treinamento SVM e avaliação de consultas por áudio
+
+O [parte2.sh](parte2.sh) executa, nesta ordem:
+
+1. Extrai atributos acústicos dos WAVs classificados de `analise_audio/inputs/training`, em segmentos de até 120 segundos.
+2. Executa o [notebook SVM](analise_audio/treinar_svm_audio.ipynb), analisa correlações e exporta os modelos de `cansaco`, `falta_ar` e `doenca_respiratoria`.
+3. Avalia os WAVs de `analise_audio/inputs/patients` com os modelos recém-treinados.
+4. Transcreve, traduz para português quando necessário, analisa o sentimento e gera o PDF. Quando há sinalização respiratória, envia o relatório por e-mail.
+
+### Entradas e configuração
+
+| Pasta | Conteúdo |
+| --- | --- |
+| `analise_audio/inputs/training/` | WAVs com prefixos `consulta_cansaco_`, `consulta_falta_ar_`, `consulta_doenca_respiratoria_` ou `consulta_sem_relacao_`. |
+| `analise_audio/inputs/patients/` | WAVs de consultas para avaliação, separados da massa de treinamento. |
+
+A seleção atual tem 20 consultas de treinamento, cinco por categoria. O notebook separa treino e teste por consulta, mantendo seus segmentos juntos. Os áudios de `patients` não participam do treinamento. Ambas as pastas são lidas sem percorrer subpastas.
+
+Configure no `.env`:
+
+| Serviço | Variáveis |
+| --- | --- |
+| Azure Speech | `SPEECH_KEY`, `SPEECH_REGION` |
+| Azure Translator | `TRANSLATOR_ENDPOINT`, `TRANSLATOR_KEY`, `TRANSLATOR_REGION` quando exigida pelo recurso |
+| Azure Text Analytics | `TEXT_ANALYTICS_ENDPOINT`, `TEXT_ANALYTICS_KEY` |
+| E-mail | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURITY`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `EMAIL_FROM`, `EMAIL_TO`, `SMTP_TIMEOUT` |
+
+### Execução
+
+Treinar e gerar o relatório **sem enviar e-mail**:
 
 ```bash
-bash trabalho4/parte1.sh /caminho/requirements.txt
+bash parte2.sh --idioma en-US
 ```
 
-Esse argumento altera apenas o arquivo de dependências, não o vídeo analisado.
+Para identificar o paciente e habilitar o alerta por e-mail, quando houver um único WAV em `patients`:
 
-## Resultados gerados
+```bash
+bash parte2.sh --idioma en-US --paciente "Paciente 001"
+```
 
-Os arquivos são gravados em `trabalho4/analise_video/outputs/`:
+O idioma padrão é `en-US`. Informe a língua **falada no áudio**, não a desejada no relatório; para consultas em português, use `--idioma pt-BR`. A avaliação traduz automaticamente os demais idiomas para português. Todos os áudios de uma execução devem usar o idioma informado.
 
-| Arquivo | Conteúdo |
+`--sem-instalar` evita reinstalar dependências, mas mantém a extração e o treinamento. Consulte `bash parte2.sh --help` para outras opções. Sem `--sem-email`, cada nova avaliação positiva pode gerar um novo envio.
+
+### Resultados
+
+Saídas em `analise_audio/outputs/parte2/`:
+
+| Caminho | Conteúdo |
 | --- | --- |
-| `avaliacao_sem_base.json` | Intervalos de frames, FPS e classificação de cada trecho identificado. |
-| `resultado.mp4` | Vídeo com pontos corporais, ângulo e indicação de execução certa ou errada nos trechos classificados. |
-| `avaliacao_sem_base.pdf` | Resumo da avaliação e tabela com início, fim e resultado dos trechos. |
+| `atributos_treinamento.parquet` | Atributos e rótulos extraídos de `training`. |
+| `svm/modelos/` | Três pipelines `.joblib`, manifesto, módulo e versões para reutilização. |
+| `svm/treinamento_executado.ipynb`, CSVs e figuras | Treinamento executado, correlações e métricas. |
+| `avaliacoes/<audio>.pdf` | Resumo médico, transcrição original, tradução e análise de sentimento. |
+| `avaliacoes/<audio>.json`, `.transcricao.txt` e `.atributos.parquet` | Resultados detalhados, texto original e atributos da consulta. |
 
-Uma nova execução utiliza os mesmos nomes e substitui os resultados anteriores.
+O PDF é salvo antes do envio de e-mail e permanece disponível se o envio falhar. Falhas de tradução ou sentimento são informadas no relatório. Se o treinamento falhar, a avaliação não começa. Novas execuções substituem saídas de mesmo nome.
 
-Exemplo da estrutura de uma avaliação:
+Mais informações: [README da análise de áudio](analise_audio/README.md).
 
-```json
-{
-  "frame_inicio": 192,
-  "frame_fim": 346,
-  "fps": 30.0,
-  "correto": false
+### Fonte dos áudios — PriMock57
+
+Os áudios são provenientes do [PriMock57, disponibilizado pela Babylon Health](https://github.com/babylonhealth/primock57), um conjunto de **57 consultas simuladas de atenção primária**, com gravações, transcrições e notas de consulta. Os dados são disponibilizados sob [Creative Commons Attribution 4.0 — CC BY 4.0](https://github.com/babylonhealth/primock57/blob/main/LICENSE.md).
+
+Neste projeto, selecionamos gravações dos participantes no papel de pacientes, renomeamos arquivos e atribuímos rótulos para os grupos estudados. A segmentação, os atributos extraídos, as transcrições e traduções automáticas e as previsões são derivados produzidos por este trabalho; os rótulos não são apresentados como classificações oficiais do PriMock57.
+
+Os WAVs do repositório de origem usam **Git LFS**. Instale-o antes de clonar e execute `git lfs pull` no repositório PriMock57 para obter os áudios reais.
+
+**Citações:** as duas entradas abaixo são preservadas conforme fornecidas na [seção de citação do PriMock57](https://github.com/babylonhealth/primock57#citing), incluindo a indicação original “in press”.
+
+```bibtex
+@inproceedings{korfiatis2022primock57,
+  title={(in press): PriMock57: A Dataset Of Primary Care Mock Consultations},
+  author={Papadopoulos Korfiatis, Alex and Moramarco, Francesco and Sarac, Radmila and Savkov, Aleksandar},
+  booktitle={Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics},
+  year={2022}
+}
+
+@inproceedings{moramarco2022human,
+  title={(In press): Human Evaluation and Correlation with Automatic Metrics in Consultation Note Generation},
+  author={Moramarco, Francesco and Papadopoulos Korfiatis, Alex and Perera, Mark and Juric, Damir and Flann, Jack and Reiter, Ehud and Belz, Anya and Savkov, Aleksandar},
+  booktitle={Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics},
+  year={2022}
 }
 ```
 
-No JSON, `correto: true` indica uma execução classificada como correta; `correto: false` indica uma execução classificada como incorreta. No PDF, esses resultados aparecem como **Execução correta** e **Execução a revisar**.
+## Limitações
 
-Os horários são calculados por `frame / FPS`, a partir do início da gravação. Por exemplo, com 30 FPS, os frames 192 a 346 correspondem a `00:00:06.400` até `00:00:11.533`. O horário final representa o último frame do trecho. Intervalos não listados não recebem classificação no relatório.
-
-## Parâmetros da demonstração
-
-O `parte1.sh` utiliza a seguinte configuração:
-
-| Parâmetro | Valor | Finalidade |
-| --- | --- | --- |
-| `-q` | `5` | Número de divisões para definir os ângulos de referência entre os limites. |
-| `-s` | `10` | Ângulo inicial de referência, em graus. |
-| `-e` | `155` | Ângulo final de referência, em graus. |
-| `-m` | `8` | Tolerância angular para reconhecer início e fim do movimento. |
-| `-n` | `8` | Tolerância angular para reconhecer a passagem pelos ângulos de referência. |
-| `-a` | `3` | Alteração angular mínima considerada no acompanhamento do movimento. |
-
-Para analisar outro vídeo, altere a variável `VIDEO_FILE` em `parte1.sh` e revise os parâmetros conforme o exercício e o enquadramento. A medida utilizada é a orientação entre ombro e pulso na imagem; ela não equivale a uma avaliação completa das articulações ou da postura.
-
-## Gerar somente o relatório PDF
-
-Se o JSON já estiver disponível, não é necessário processar o vídeo novamente. A partir da raiz do repositório, após preparar o ambiente com `parte1.sh`:
-
-```bash
-trabalho4/.venv/bin/python trabalho4/analise_video/gerar_relatorio.py \
-  --json trabalho4/analise_video/outputs/avaliacao_sem_base.json \
-  --video trabalho4/analise_video/inputs/movies/PM_012-Camera17-30fps.mp4
-```
-
-Para gerar um PDF para cada JSON da pasta padrão, informando o FPS real dos vídeos:
-
-```bash
-trabalho4/.venv/bin/python trabalho4/analise_video/gerar_relatorio.py --fps 30
-```
-
-Use uma mesma taxa em lote apenas quando ela corresponder a todos os vídeos de origem. Mais opções estão no [README da análise de vídeo](analise_video/README.md).
-
-## Roteiro sugerido para a apresentação
-
-1. Apresentar o exercício, o vídeo utilizado e o critério esperado de execução.
-2. Mostrar a execução de `parte1.sh` e explicar a identificação dos pontos corporais com MediaPipe.
-3. Exibir no vídeo anotado exemplos de repetições corretas e incorretas.
-4. Comparar as classificações com o trabalho técnico de referência.
-5. Abrir o PDF e mostrar como os horários permitem localizar os movimentos que precisam de revisão.
-
-A parte 1 demonstra a análise de vídeo. As entregas de áudio, integração multimodal, serviços em nuvem e alertas descritas no desafio completo devem ser documentadas nas respectivas etapas do trabalho.
+Os resultados são exploratórios e destinados à revisão profissional. Na parte 2, `doenca_respiratoria` representa o grupo de tosse rotulado neste trabalho; não confirma diagnóstico. A ausência de sinalização não exclui doença, e a análise de sentimento descreve o texto, não o estado emocional do paciente.

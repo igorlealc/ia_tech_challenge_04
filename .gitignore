@@ -20,6 +20,7 @@ env/
 ENV/
 .env
 .env.*
+!.env.example
 pip-log.txt
 pip-delete-this-directory.txt
 .pytest_cache/
