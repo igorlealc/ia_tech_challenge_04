@@ -1,4 +1,5 @@
-# Dependências unificadas das partes 1 e 2, scripts e notebooks.
+# Dependências de analise_video, analise_audio e deteccao_anomalias.
+# Inclui scripts, notebooks e a janela nativa do monitor de PAM.
 # Utilize Python 3.11.
 # No Apple Silicon, utilize Python nativo ARM64.
 
@@ -6,6 +7,12 @@
 mediapipe==0.10.21
 # Manter NumPy 1.26 para compatibilidade com MediaPipe e PyArrow <26.
 numpy==1.26.4
+
+# Leitura dos sinais e anotações WFDB (compatível com NumPy 1.26).
+wfdb==4.1.2
+
+# Extração das séries dos arquivos VitalDB em deteccao_anomalias/vitaldb/.
+vitaldb==1.7.2
 
 # Fornece cv2, incluindo imshow.
 # Não instalar junto com opencv-python ou variantes headless.
@@ -23,15 +30,19 @@ reportlab>=4.0,<5
 # Transcrição com Azure, configuração .env e captura do microfone.
 azure-cognitiveservices-speech>=1.42,<2
 azure-ai-textanalytics>=5.3,<6
+# Importado diretamente para credenciais e exceções dos clientes Azure.
+azure-core>=1.30,<2
 requests>=2.31,<3
+# Retry nas consultas e downloads do VitalDB.
+urllib3>=1.26,<3
 python-dotenv>=1.0,<2
 certifi>=2024.2.2
 sounddevice>=0.5,<1
 
-# Atributos acústicos e exportação Parquet (analise_audio/).
+# Atributos acústicos (analise_audio/).
 opensmile>=2.5,<3
 soundfile>=0.12,<1
-# Versão compatível com NumPy 1.26 e com o ambiente de treinamento.
+# Parquet de áudio e sinais vitais; compatível com NumPy 1.26.
 pyarrow==19.0.1
 
 # Inferência dos pipelines exportados pelo notebook de áudio.
@@ -39,9 +50,14 @@ scikit-learn==1.5.2
 scipy==1.13.1
 joblib>=1.3,<2
 
-# Análise de correlação e execução do notebook de treinamento SVM.
+# Gráficos dos notebooks de áudio/PAM e monitor de sinais vitais.
 matplotlib>=3.8,<3.10
+# Backend QtAgg: abre a janela do sistema operacional sem depender de Tkinter.
+PySide6>=6.8,<7
 seaborn==0.13.2
+# IPython.display é importado diretamente pelos notebooks.
+ipython>=8,<10
+# Leitura, execução e edição dos notebooks de áudio e detecção de anomalias.
 nbformat>=5.10,<6
 nbclient>=0.10,<1
 jupyter-client>=8,<9
@@ -49,3 +65,6 @@ ipykernel>=6.29,<7
 jupyterlab>=4,<5
 
 # O envio de e-mail usa smtplib/email/ssl da biblioteca padrão do Python.
+# Dependências externas ao pip: FFmpeg no PATH para conversão de áudio/vídeo;
+# PortAudio/libsndfile e bibliotecas gráficas podem ser necessárias conforme o SO.
+# As janelas do monitor/OpenCV exigem uma sessão gráfica disponível.

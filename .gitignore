@@ -3,6 +3,12 @@ output/
 outputs/
 video_rotulado/
 
+# Saídas da detecção de anomalias (qualquer lote de casos)
+/deteccao_anomalias/**/analise_exploratoria/
+/deteccao_anomalias/**/analise_por_intervalo/
+/deteccao_anomalias/**/sinais/
+/deteccao_anomalias/**/vitaldb/outputs
+
 artefatos/
 video/*
 !video/.gitkeep
