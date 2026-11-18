@@ -2,6 +2,26 @@
 
 Os scripts desta pasta preparam os dados para a análise de anomalias. O [casos.py](casos.py) seleciona casos cirúrgicos por faixa etária, sexo registrado e disponibilidade de sinais. O [baixar_sinais.py](baixar_sinais.py) usa a lista selecionada para baixar os arquivos completos que faltam e exportar os sinais em Parquet. Eles não treinam modelos nem classificam anomalias.
 
+## Organização dos dados
+
+Todos os dados baixados do VitalDB devem ficar em `deteccao_anomalias/vitaldb/outputs`. Os CSVs da seleção, os arquivos completos e os sinais extraídos ficam organizados por amostra:
+
+```text
+vitaldb/
+├── casos.py
+├── baixar_sinais.py
+└── outputs/
+    ├── vitaldb_200/
+    │   ├── casos_selecionados.csv
+    │   ├── clinical_data_200.csv
+    │   ├── caso_XXXX.vital
+    │   └── sinais/
+    │       └── caso_XXXX.parquet
+    └── vitaldb_50/
+```
+
+Os caminhos padrão no código ainda apontam para pastas fora de `outputs`. As tabelas abaixo registram esses padrões atuais; para seguir a organização definida, informe explicitamente `--pasta` na seleção e `--casos`, `--pasta-vital` e `--saida` na extração, como nos exemplos. Para outras amostras, mantenha a subpasta dentro de `outputs`.
+
 ## Preparação
 
 Use Python 3.11 e as dependências de [requirements.txt](../../requirements.txt). Os exemplos abaixo devem ser executados a partir de `trabalho4`, com o ambiente virtual ativado:
@@ -25,7 +45,7 @@ python deteccao_anomalias/vitaldb/casos.py \
   --sexo F \
   --sinais pressao_invasiva frequencia_cardiaca spo2 \
   --quantidade 200 \
-  --pasta deteccao_anomalias/vitaldb/vitaldb_200 \
+  --pasta deteccao_anomalias/vitaldb/outputs/vitaldb_200 \
   --somente-lista
 ```
 
@@ -33,12 +53,12 @@ Depois, baixe os arquivos completos e extraia os sinais dessa seleção:
 
 ```bash
 python deteccao_anomalias/vitaldb/baixar_sinais.py \
-  --casos deteccao_anomalias/vitaldb/vitaldb_200/casos_selecionados.csv \
-  --pasta-vital deteccao_anomalias/vitaldb/vitaldb_200 \
-  --saida deteccao_anomalias/vitaldb/vitaldb_200/sinais
+  --casos deteccao_anomalias/vitaldb/outputs/vitaldb_200/casos_selecionados.csv \
+  --pasta-vital deteccao_anomalias/vitaldb/outputs/vitaldb_200 \
+  --saida deteccao_anomalias/vitaldb/outputs/vitaldb_200/sinais
 ```
 
-**Os padrões de pasta dos scripts são diferentes:** `casos.py` usa `vitaldb_200`; `baixar_sinais.py` ainda usa `vitaldb_50`. Passe as três opções de caminho no segundo comando para trabalhar com a nova seleção. Alterar apenas `--casos` não altera automaticamente `--pasta-vital` ou `--saida`.
+**Os padrões de pasta dos scripts são diferentes e ainda estão fora de `outputs`:** `casos.py` usa `vitaldb_200`; `baixar_sinais.py` usa `vitaldb_50`. Mantenha todos os argumentos de caminho dos exemplos para trabalhar com a seleção em `outputs/vitaldb_200`. Alterar apenas `--casos` não altera automaticamente `--pasta-vital` ou `--saida`.
 
 Para testar a extração de apenas dois casos, acrescente `--limite 2` ao segundo comando. Depois, execute sem essa opção para processar a lista inteira.
 
@@ -77,10 +97,11 @@ Se houver menos candidatos que o solicitado, o script informa a quantidade dispo
 | `--somente-lista` | Desativado | Grava os CSVs sem baixar arquivos `.vital`. |
 | `--help` | — | Exibe a ajuda. |
 
-Sem argumentos, seleciona 200 casos do sexo feminino entre 45 e 55 anos com pressão arterial média invasiva, salva os CSVs e baixa os arquivos completos:
+Para selecionar 200 casos do sexo feminino entre 45 e 55 anos com o sinal padrão de pressão arterial média invasiva, salvar os CSVs e baixar os arquivos completos dentro de `outputs`, use:
 
 ```bash
-python deteccao_anomalias/vitaldb/casos.py
+python deteccao_anomalias/vitaldb/casos.py \
+  --pasta deteccao_anomalias/vitaldb/outputs/vitaldb_200
 ```
 
 Para selecionar casos do sexo masculino com outra faixa e quantidade:
@@ -88,17 +109,17 @@ Para selecionar casos do sexo masculino com outra faixa e quantidade:
 ```bash
 python deteccao_anomalias/vitaldb/casos.py \
   --idade-minima 40 --idade-maxima 60 --sexo M --quantidade 100 \
-  --pasta deteccao_anomalias/vitaldb/vitaldb_100
+  --pasta deteccao_anomalias/vitaldb/outputs/vitaldb_100
 ```
 
-A pasta padrão não muda quando `--quantidade` muda. Use `--pasta` para separar experimentos.
+A pasta padrão não muda quando `--quantidade` muda. Use `--pasta` para separar experimentos dentro de `outputs`.
 
 Para selecionar somente pela disponibilidade de SpO₂ e frequência respiratória, mantendo os padrões de idade, sexo e quantidade:
 
 ```bash
 python deteccao_anomalias/vitaldb/casos.py \
   --sinais spo2 frequencia_respiratoria \
-  --pasta deteccao_anomalias/vitaldb/vitaldb_respiratorio \
+  --pasta deteccao_anomalias/vitaldb/outputs/vitaldb_respiratorio \
   --somente-lista
 ```
 
@@ -173,7 +194,7 @@ Exemplo de leitura e associação dos sinais aos metadados, executado em `trabal
 from pathlib import Path
 import pandas as pd
 
-base = Path("deteccao_anomalias/vitaldb/vitaldb_200")
+base = Path("deteccao_anomalias/vitaldb/outputs/vitaldb_200")
 casos = pd.read_csv(base / "casos_selecionados.csv")
 caseid = int(casos.iloc[0]["caseid"])
 sinais = pd.read_parquet(base / "sinais" / f"caso_{caseid:04d}.parquet")
@@ -185,6 +206,8 @@ Antes de treinar um detector, avalie lacunas, qualidade dos sinais e disponibili
 
 Os dicionários da amostra anterior explicam os campos, mas suas contagens descrevem somente aqueles 50 casos:
 
-- [Dicionário da tabela clínica](vitaldb_50/DICIONARIO_DADOS.md).
-- [Dicionário dos sinais Parquet](vitaldb_50/DICIONARIO_SINAIS_PARQUET.md).
-- [Documentação da amostra de 50 casos](vitaldb_50/README.md).
+- [Dicionário da tabela clínica](outputs/vitaldb_50/DICIONARIO_DADOS.md).
+- [Dicionário dos sinais Parquet](outputs/vitaldb_50/DICIONARIO_SINAIS_PARQUET.md).
+- [Documentação da amostra de 50 casos](outputs/vitaldb_50/README.md).
+
+Para a sequência completa de análise e monitoramento, consulte o [guia de execução](../README_FLUXO_EXECUCAO.md).
